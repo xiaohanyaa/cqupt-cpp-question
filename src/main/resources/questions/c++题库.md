@@ -1,6 +1,6 @@
 ## ch001_001
 ``` c++
-#include　<iostream>
+#include <iostream>
 void　main()
 {
 　　int　a,b,sum;
@@ -70,15 +70,15 @@ D.　第4、5、8行语句
 
 如果这一行缺失或写错（例如使用了全角字符 `#include　<iostream>`），会导致以下问题：
 
-1. **第4行**：`cout` 是定义在 `<iostream>` 头文件中的，如果没有包含这个头文件，编译器会报错，不知道 `cout` 是什么。
-2. **第5行**：`cin` 也是定义在 `<iostream>` 头文件中的，如果没有包含这个头文件，编译器同样会报错，不知道 `cin` 是什么。
+1. **第5行**：`cout` 是定义在 `<iostream>` 头文件中的，如果没有包含这个头文件，编译器会报错，不知道 `cout` 是什么。
+2. **第6行**：`cin` 也是定义在 `<iostream>` 头文件中的，如果没有包含这个头文件，编译器同样会报错，不知道 `cin` 是什么。
 3. **第8行**：这一行再次使用了 `cout`，同样会因为 `<iostream>` 头文件未包含而导致编译错误。
 
-综上所述，程序第一行会影响第4、5、8行语句。
+综上所述，程序第一行会影响第5、6、8行语句。
 
 因此，正确答案是：
 
-D. 第4、5、8行语句
+A. 第5、6、8行语句
 
 
 ------
@@ -2313,46 +2313,6 @@ D.　3
 
 ------
 
-首先，我们来分析给出的代码：
-
-1. `#include<iostream>`：包含输入输出流库。
-2. `using namespace std;`：使用标准命名空间。
-3. `int main(){`：主函数开始。
-4. `char ch = ''A'';`：定义一个字符变量 `ch` 并初始化为字符 `'A'`。注意这里有两个单引号，这是一个错误，正确的应该是 `char ch = 'A';`。
-5. `ch += 32;`：将 `ch` 的值增加 32。在 ASCII 码中，大写字母和对应小写字母之间的差值是 32，所以这一步是将大写 `A` 转换为小写 `a`。
-6. `cout << ''n'' << ch;`：输出字符 `'n'` 和变量 `ch` 的值。注意这里的 `'n'` 应该是 `\n` 表示换行符，但即使如此，它仍然会被当作普通字符 `'n'` 输出。
-7. `}`：主函数结束。
-
-现在，我们来看输出：
-
-- `cout << ''n'' << ch;` 这行代码会输出字符 `'n'` 和变量 `ch` 的值，即小写字母 `a`。
-- 由于没有明确的换行符 `\n`，输出会在同一行显示。
-
-所以，最终的输出是 `na`。
-
-**关于输出行数的判断：**
-- 整个程序只进行了一次输出操作，且输出内容在同一行显示。
-
-因此，该程序输出 **1 行**。
-
-**答案是 B. 1**。
-
-修正代码
-为了使代码正确运行，以下是修正后的版本：
-
-```cpp
-#include<iostream>
-using namespace std;
-int main(){
-    char ch = 'A';  // 正确使用单引号
-    ch += 32;
-    cout << 'n' << ch;  // 这里仍然使用单引号，但应该用 \n 来换行
-    return 0;  // 添加返回语句，虽然不是必须的，但建议加上
-}
-```
-
-如果希望输出换行，可以将 `'n'` 改为 `'\n'`：
-
 ```cpp
 #include<iostream>
 using namespace std;
@@ -2364,7 +2324,7 @@ int main(){
 }
 ```
 
-这样输出会是两行，第一行是空行，第二行是 `a`。但根据原题的代码和选项，正确答案是 B. 1。
+这样输出会是两行，第一行是空行，第二行是 `a`。但根据原题的代码和选项，正确答案是 C. 2。
 
 
 ------
@@ -2382,27 +2342,7 @@ D.　　A
 
 ------
 
-分析给出的代码，我们可以逐行检查其功能和可能的输出：
-
-1. `#include<iostream>`：包含标准输入输出库。
-2. `using namespace std;`：使用标准命名空间。
-3. `int main(){`：主函数的开始。
-4. `char ch = ''A'';`：这里有一个明显的错误，`''A''`使用了两个单引号。正确的应该是`'A'`。假设这个是打字错误，正确的代码应该是`char ch = 'A';`，这行代码将字符'A'赋值给变量`ch`。
-5. `ch += 32;`：这行代码将`ch`的ASCII值增加32。字符'A'的ASCII值是65，加上32后变为97，这是字符'a'的ASCII值。
-6. `cout << ''n'' << ch;`：这里同样有一个错误，`''n''`应该改为`'n'`。这行代码会先输出字符'n'，然后输出变量`ch`当前的值，即字符'a'。
-
-综合以上分析，如果假设代码中的两个错误（`''A''`和`''n''`）是打字错误，并且它们实际上应该是`'A'`和`'n'`，那么程序的正确执行结果应该是输出字符'n'后紧接着输出字符'a'。
-
-因此，屏幕输出的第一行为：
-```
-na
-```
-
-在给出的选项中，正确答案是：
-C. a
-
-这是因为题目只询问了输出的第一行，并且根据上下文，我们假设了代码中的错误是打字错误。实际上，如果代码严格按给出的错误形式运行，将会导致编译错误。但根据题目的意图，我们做出上述假设以得出合理的答案。
-
+输出换行，正确答案：B
 
 ------
 
@@ -2419,25 +2359,8 @@ D.　　97
 
 ------
 
-首先，我们来分析这段代码的每一行：
-
-1. 包含头文件iostream，这是为了使用输入输出流。
-2. 使用命名空间std，这样我们可以直接使用std中的元素，比如cout。
-3. main函数开始，这是程序的入口。
-4. 声明一个字符变量ch，并将其初始化为字符'A'。在ASCII码中，'A'的值是65。
-5. ch += 32; 这行代码将ch的值增加了32。因为'A'和'a'在ASCII码表中相差32，所以这行代码实际上是将大写字母'A'转换成小写字母'a'。
-6. 输出字符n和变量ch的值。这里需要注意的是，输出的第一个字符是'n'，而不是换行符'\n'。
-
-根据以上分析，我们可以确定程序的输出是：
-
-```
-na
-```
-
-所以，屏幕输出的第二行是字母'a'。
-
+'A' + 32 ='a'，ASCII数值相加，屏幕输出的第二行是字母'a'。
 因此，正确答案是A. a。
-
 
 ------
 
@@ -2490,31 +2413,6 @@ D.　　97
 
 ------
 
-首先，我们来分析给出的代码：
-
-1. `#include<iostream>`：包含输入输出流库。
-2. `using namespace std;`：使用标准命名空间。
-3. `int main(){`：主函数开始。
-4. `char ch = ''A'';`：定义一个字符变量 `ch` 并初始化为字符 `'A'`。注意这里的引号使用有误，应该是单引号 `'A'`。
-5. `ch += 32;`：将 `ch` 的值增加 32。字符 `'A'` 的 ASCII 值是 65，加上 32 后变为 97，对应的字符是 `'a'`。
-6. `cout << ''n'' << ch;`：输出一个换行符和一个字符 `ch`。
-
-现在，根据题目要求，将第6行修改为 `cout << ''n'' << (int)ch;`，即输出一个换行符和字符 `ch` 的整数形式。
-
-修改后的代码如下：
-
-```cpp
-#include<iostream>
-using namespace std;
-int main(){
-    char ch = 'A'; // 修正引号
-    ch += 32;
-    cout << '\n' << (int)ch; // 修正引号并按题目要求修改
-}
-```
-
-分析修改后的代码：
-
 1. `char ch = 'A';`：`ch` 被初始化为字符 `'A'`，其 ASCII 值为 65。
 2. `ch += 32;`：`ch` 的值变为 97，对应的字符是 `'a'`。
 3. `cout << '\n' << (int)ch;`：首先输出一个换行符，然后输出 `ch` 的整数形式，即 97。
@@ -2540,29 +2438,11 @@ D.　97
 ------
 
 字符 'a' 的 ASCII 值是 97。
-
 所以正确答案是：
 D. 97
-
 解释：
 - 'A' 的 ASCII 值是 65。
 - 'a' 的 ASCII 值是 97。
-
-在你的代码中：
-```cpp
-#include<iostream>
-using namespace std;
-int main(){
-    char ch = 'A';
-    ch += 32;
-    cout << 'n' << ch;
-}
-```
-- 第4行：`char ch = 'A';` 将字符 'A' 赋值给变量 `ch`，'A' 的 ASCII 值是 65。
-- 第5行：`ch += 32;` 将 `ch` 的值增加 32，65 + 32 = 97，这正好是 'a' 的 ASCII 值。
-- 第6行：`cout << 'n' << ch;` 输出字符 'n' 和变量 `ch` 的值，此时 `ch` 的值是 'a'。
-
-所以程序会输出 "na"。
 
 
 ------
@@ -2591,23 +2471,6 @@ C. 65
   - A. 0：这是 ASCII 表中的空字符（NUL）的编码值。
   - B. 48：这是数字 '0' 的 ASCII 编码值。
   - D. 97：这是小写字母 'a' 的 ASCII 编码值。
-
-你的代码中也有一些小错误和格式问题，以下是修正后的版本：
-
-```cpp
-#include<iostream>
-using namespace std;
-
-int main(){
-    char ch = 'A'; // 单引号之间不能有空格
-    ch += 32; // 将大写字母转换为小写字母
-    cout << 'n' << ch; // 单引号之间不能有空格
-    return 0; // main函数应该有一个返回值
-}
-```
-
-这段代码将大写字母 'A' 转换为小写字母 'a'，然后输出 'na'。
-
 
 ------
 
@@ -2640,20 +2503,6 @@ B. 66
 
 ------
 
-## ch002_007
-``` c++
-1)　#include<iostream>
-2)　#include　<iomanip>
-3)　using　namespace　std;
-4)　int　main(){
-5)　　　　　　cout<<　setprecision(18)　<<　"Real:"<<"12.3456789012345678901E20"<<　endl;
-6)　　　　float　f　=　12.3456789012345678901E20;
-7)　　　　cout　<<　setprecision(18)　<<　"float　:"　<<　f　<<　endl;
-8)　　　　double　d　=　12.3456789012345678901E20;
-9)　　　　cout　<<　setprecision(18)　<<　"double:"　<<　d　<<　endl;
-10)　}
-
-```
 ### 题目22758
 问题：1.关于函数setprecision的作用说法正确的是：
 A.　　没有用处
@@ -2755,36 +2604,10 @@ D.　　20
 
 ------
 
-在VS（Visual Studio）环境中，`double`类型的有效位数通常是15位到17位。这是因为`double`类型通常使用IEEE 754双精度浮点数标准，该标准规定双精度浮点数有52位用于表示小数部分（尾数），加上隐含的1位，总共是53位二进制位。这大约相当于15到17位十进制有效数字。
-
-在你的代码中，`setprecision(18)`设置了输出的精度为18位，但这并不意味着`double`类型能精确表示这么多位。实际上，超出其有效位数的部分可能会是不准确的。
-
-让我们分析一下你的代码：
-
-```cpp
-#include<iostream>
-#include<iomanip>
-using namespace std;
-
-int main() {
-    cout << setprecision(18) << "Real:" << "12.3456789012345678901E20" << endl;
-    float f = 12.3456789012345678901E20;
-    cout << setprecision(18) << "float :" << f << endl;
-    double d = 12.3456789012345678901E20;
-    cout << setprecision(18) << "double:" << d << endl;
-}
-```
-
-- 第5行输出的是一个字符串，所以它会原样显示"12.3456789012345678901E20"。
-- 第7行中，`float`类型的有效位数通常是7位左右，所以输出的结果会很不准确。
-- 第9行中，`double`类型的有效位数是15到17位，所以输出的结果会在前15到17位是准确的，之后的位数可能是不准确的。
-
-因此，根据上述分析，VS环境中`double`的有效位数最接近的选项是：
-
-A. 15
-
-所以正确答案是 A. 15。
-
+在大多数现代计算机系统中，包括 Visual Studio 环境，双精度浮点数（double 类型）通常遵循 IEEE 754 标准。根据这个标准，双精度浮点数有 53 位的精度，这大约相当于 15 到 17 位十进制有效数字。
+因此，对于 Visual Studio 环境，正确答案是：B. 16
+这个答案是一个常见的近似值，因为实际的精度可能略有不同，但通常在 15 到 17 位之间，而 16 位是最常引用的值。
+// 实时校对到此
 
 ------
 
@@ -17237,19 +17060,19 @@ D.  编译报错，标识符未定义
     #include "file2.h"
     #include <iostream>
     using namespace std;
-
+    
     static void staticFn();
-
+    
     int n;
     static int s;
-
+    
     void fn() {
         staticFn();
         cout << "this is fn()n";
         n = 1;
         s = 2;
     }
-
+    
     static void staticFn() {
         cout << "this is staticfn()n";
     }
@@ -17260,7 +17083,7 @@ D.  编译报错，标识符未定义
     #include <iostream>
     #include "file2.h"
     using namespace std;
-
+    
     void main() {
         fn();
         // staticFn(); // 这行是注释的
@@ -18591,7 +18414,7 @@ D.  第40行
    ```cpp
    #include<iostream>
    using namespace std;
-
+   
    void fn(){
        cout << "fn() is a function." << endl;
    }
@@ -18601,15 +18424,15 @@ D.  第40行
    ```cpp
    #include<iostream>
    using namespace std;
-
+   
    static void staticFn();
    void fn();
-
+   
    void fn(){
        staticFn();
        cout << "this is fn()n";
    }
-
+   
    static void staticFn(){
        cout << "this is staticFn()n";
    }
@@ -18620,7 +18443,7 @@ D.  第40行
    #include<iostream>
    #include"file1.h"
    using namespace std;
-
+   
    void main(){
        fn();
        //staticFn();
@@ -19374,12 +19197,12 @@ D.  随机值
     ```cpp
     #include<iostream>
     using namespace std;
-
+    
     void fn();
     static void staticFn();
     extern int n;
     int s;  // 修改：去掉extern，直接定义
-
+    
     void main()
     {
         fn();
@@ -19393,20 +19216,20 @@ D.  随机值
     ```cpp
     #include<iostream>
     using namespace std;
-
+    
     static void staticFn();  // 修改：static void staticFn(){}
     void fn();
-
+    
     int n;  // 定义全局变量
     static int s;  // 定义静态全局变量
-
+    
     void fn(){
         staticFn();
         cout << "this is fn()";
         n = 1;  // 可正常访问
         s = 2;  // 可正常访问
     }
-
+    
     static void staticFn(){
         cout << "this is staticFn()";
     }
@@ -20035,12 +19858,12 @@ D.  随机值
     ```cpp
     #include<iostream>
     using namespace std;
-
+    
     void fn();
     static void staticFn();
     extern int n;
     extern int s;
-
+    
     void main()
     {
         fn();
@@ -20054,20 +19877,20 @@ D.  随机值
     ```cpp
     #include<iostream>
     using namespace std;
-
+    
     static void staticFn();
     void fn();
-
+    
     int n; // 定义全局变量
     static int s; // 定义静态全局变量
-
+    
     void fn(){
         staticFn();
         cout << "this is fn()\n";
         n = 1; // 可正常访问
         s = 2; // 可正常访问
     }
-
+    
     static void staticFn(){
         cout << "this is staticFn()\n";
     }
@@ -20221,12 +20044,12 @@ D.  随机值
     ```cpp
     #include<iostream>
     using namespace std;
-
+    
     void fn();
     static void staticFn();
     extern int n;
     extern int s;
-
+    
     void main()
     {
         fn();
@@ -20240,20 +20063,20 @@ D.  随机值
     ```cpp
     #include<iostream>
     using namespace std;
-
+    
     static void staticFn();
     void fn();
-
+    
     int n; // 定义全局变量
     static int s; // 定义静态全局变量
-
+    
     void fn(){
         staticFn();
         cout << "this is fn()";
         n = 1; // 可正常访问
         s = 2; // 可正常访问
     }
-
+    
     static void staticFn(){
         cout << "this is staticFn()";
     }
@@ -26197,7 +26020,7 @@ D、　　123
 - 数组 `a`（3x4）：
   ```
   5  7  8  2
- -2  4  1  1
+   -2  4  1  1
   1  2  3  4
   ```
 - 数组 `b`（4x5）：
