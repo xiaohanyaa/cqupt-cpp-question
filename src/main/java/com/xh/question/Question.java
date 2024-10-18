@@ -115,6 +115,54 @@ public class Question {
         executor.shutdown(); // 不再接受新任务，等待所有已提交任务完成
     }
 
+    public void doQuestion(String questionId, String questionAnswer) {
+        String requestBody = String.format("{\"strTestParam\":\"<cTestParam><cQuestion>%s</cQuestion><cUserAnswer>%s</cUserAnswer></cTestParam>\"}", questionId, questionAnswer);
+        Request request = new Request.Builder()
+                .url(BASE_URL)
+                .post(RequestBody.create(requestBody, MEDIA_TYPE_PLAIN))
+                .addHeader("Accept", "*/*")
+                .addHeader("Accept-Encoding", "gzip, deflate")
+                .addHeader("Accept-language", "zh-CN,zh;q=0.9")
+                .addHeader("Cache-control", "no-cache")
+                .addHeader("Connection", "keep-alive")
+                .addHeader("Content-Length", "100")
+                .addHeader("Content-Type", "text/plain; charset=UTF-8")
+                .addHeader("cookie", "ASP.NET_SessionId=" + sessionId)
+                .addHeader("Host", "172.22.214.200")
+                .addHeader("Origin", "http://172.22.214.200")
+                .addHeader("Pragma", "no-cache")
+                .addHeader("Referer", "http://172.22.214.200/ctas/CPractice.aspx")
+                .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
+                .addHeader("X-AjaxPro-Method", "IsOrNotTrue")
+                .build();
+        try (Response response = OK_HTTP_CLIENT.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Unexpected code " + response);
+            }
+            String resp = response.body().string();
+            if (resp.contains("1")) {
+                System.out.println(String.format("题目id：%s，答案：%s，正确！", questionId, questionAnswer));
+                // 回答正确后，发 写入日志请求
+                writeLog(request.newBuilder().header("X-AjaxPro-Method", "writeLog").build());
+            } else {
+                System.err.println(String.format("题目id：%s，答案：%s，错误!", questionId, questionAnswer));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void writeLog(Request writeLog) {
+        try (Response response = OK_HTTP_CLIENT.newCall(writeLog).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Unexpected code " + response);
+            }
+            System.out.println("writeLog 响应：" + response.body().string());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static void doQuestion(String programId) {
         int questionIndex = 0;// 记录每个程序的题目数
         boolean addCode = true;// 判断是否是第一次抓取
@@ -229,7 +277,4 @@ public class Question {
                 .replace("&nbsp;", " ")
                 .replace("<br>", "\n");
     }
-
-    // 解析收集的md文件中的每道题的答案
-
 }
