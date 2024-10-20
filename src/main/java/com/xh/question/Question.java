@@ -44,16 +44,19 @@ public class Question {
 
     private static final String BASE_URL = "http://172.22.214.200/ctas/ajaxpro/CExam.CPractice,App_Web_tzfdzrj8.ashx";
     private static final MediaType MEDIA_TYPE_PLAIN = MediaType.get("text/plain; charset=UTF-8");
-    private static final String sessionId = "qdvyvm45s0aayt45lwxtcuau";
+    // 填入你的sessionId
+    private static final String sessionId = "d3rkfu45bx4jnq455vkdb2ba";
 
     // 本次需要刷题的章节id {341, 342, 343, 344, 345, 401, 402, 403, 404, 405}
     int[] cChapterID = {341, 342, 343, 344, 345, 401, 402, 403, 404, 405};
     // 存放章节中的所有程序编号
     public ArrayList<String> CProgramIDList = new ArrayList<>();
 
-    HashMap<String, String> questionIdMapAnswer = new HashMap<>();
+    public static int correctNum = 0;
 
     public void getCProgramID() {
+        Type listType = new TypeToken<List<Map<String, String>>>() {
+        }.getType();
         Arrays.stream(cChapterID).forEach(chapterId -> {
             String requestBody = String.format("{\"cChapterID\":\"%d\"}", chapterId);
             Request request = new Request.Builder()
@@ -78,8 +81,7 @@ public class Question {
                         .replace("\\", "")
                         .replaceFirst("\"", "")
                         .replace("\";/*", "");
-                Type listType = new TypeToken<List<Map<String, String>>>() {
-                }.getType();
+
                 List<Map<String, String>> programList = GSON.fromJson(responseBody, listType);
 
                 // 提取 CProgramID 并放入 List 中
@@ -94,28 +96,26 @@ public class Question {
     }
 
     public void getQuestion() {
-        // 参数有点调整
+        // 参数有待调整
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 5, 10, 5000,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>()
+                new LinkedBlockingQueue<>()
         );
 
-        CProgramIDList.forEach(programId -> {
-            executor.submit(() -> {
-                System.out.println("Thread: " + programId);
-                try {
-                    doQuestion(programId);
-                } catch (Exception e) {
-                    // 处理异常
-                    System.err.println("Exception in thread for programId " + programId + ": " + e.getMessage());
-                }
-            });
-        });
+        CProgramIDList.forEach(programId -> executor.submit(() -> {
+            System.out.println("Thread: " + programId);
+            try {
+                doQuestion(programId);
+            } catch (Exception e) {
+                // 处理异常 线程池会吞掉异常 因为这里用的runnable接口 待解决
+                System.err.println("Exception in thread for programId " + programId + ": " + e.getMessage());
+            }
+        }));
         executor.shutdown(); // 不再接受新任务，等待所有已提交任务完成
     }
 
-    public void doQuestion(String questionId, String questionAnswer) {
+    public void doQuestion(String questionId, String questionAnswer, boolean writeLog) {
         String requestBody = String.format("{\"strTestParam\":\"<cTestParam><cQuestion>%s</cQuestion><cUserAnswer>%s</cUserAnswer></cTestParam>\"}", questionId, questionAnswer);
         Request request = new Request.Builder()
                 .url(BASE_URL)
@@ -140,12 +140,16 @@ public class Question {
                 throw new IOException("Unexpected code " + response);
             }
             String resp = response.body().string();
+            chcekSessionVaild(resp);
             if (resp.contains("1")) {
-                System.out.println(String.format("题目id：%s，答案：%s，正确！", questionId, questionAnswer));
+                correctNum++;
+                System.out.printf("题目id：%s，答案：%s，正确！%n", questionId, questionAnswer);
                 // 回答正确后，发 写入日志请求
-                writeLog(request.newBuilder().header("X-AjaxPro-Method", "writeLog").build());
+                if (writeLog) {
+                    writeLog(request.newBuilder().header("X-AjaxPro-Method", "writeLog").build());
+                }
             } else {
-                System.err.println(String.format("题目id：%s，答案：%s，错误!", questionId, questionAnswer));
+                System.err.printf("题目id：%s，答案：%s，错误!%n", questionId, questionAnswer);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -197,21 +201,19 @@ public class Question {
                     .addHeader("X-AjaxPro-Method", "GetJSONTest").build();
 
             try (Response response = OK_HTTP_CLIENT.newCall(request).execute()) {
-                System.out.println("请求成功");
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 }
 
                 String resp = response.body().string();
+                chcekSessionVaild(resp);
                 if (resp.contains("ArgumentOutOfRangeException")) {
                     System.out.println(programId + "的相关题目已完成！\n");
                     System.out.println("题目 cProgramId = " + programId + ", cQuestionIndex = " + questionIndex + " 不存在");
                     System.out.println("整体对话如下 ：\n" + GSON.toJson(content) + "\n");
                     break;
                 }
-                if (resp.contains("正在中止线程")) {
-                    throw new RuntimeException("请重新在浏览器登录后再执行并检查cookie是否已过期");
-                }
+
                 // 将 responseBody 中的 HTML 转义字符转换为实际的符号
                 String unescapedResponseBody = StringEscapeUtils.unescapeHtml4(resp);
                 unescapedResponseBody = unescapedResponseBody
@@ -255,6 +257,12 @@ public class Question {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private static void chcekSessionVaild(String resp) {
+        if (resp.contains("正在中止线程")) {
+            throw new RuntimeException("请重新在浏览器登录后再执行并检查cookie是否已过期");
         }
     }
 
