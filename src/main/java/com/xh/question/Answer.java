@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,10 +56,17 @@ public class Answer {
         Files.write(Paths.get(fileName), list, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.APPEND);
     }
 
-    public static void main(String[] args) throws Exception {
-        Answer answer = new Answer();
-        Question question = new Question();
-        answer.checkAnswer(answer, question);
+    public void boot(Answer answer, Question question) throws IOException, InterruptedException {
+        Set<Map.Entry<String, String>> set = answer.readAnswerToSet();
+        for (Map.Entry<String, String> e : set) {
+            // 校对答案 不写入日志
+            question.doQuestion(e.getKey(), e.getValue(), true);
+            // 模拟刷题
+            Thread.sleep(ThreadLocalRandom.current().nextInt(3000, 6000));
+        }
+        int total = set.size();
+        System.out.printf("题目总数: %d, 正确数量: %d, 错误数量: %d, 正确率：%f%n",
+                total, Question.correctNum, total - Question.correctNum, Question.correctNum * 1.0 / total);
     }
 
     private void checkAnswer(Answer answer, Question question) throws IOException, InterruptedException {
@@ -90,7 +98,8 @@ public class Answer {
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
             String line;
-            Type type = new TypeToken<Map<String, String>>() {}.getType();
+            Type type = new TypeToken<Map<String, String>>() {
+            }.getType();
 
             while ((line = reader.readLine()) != null) {
                 Map<String, String> lineMap = GSON.fromJson(line, type);

@@ -45,7 +45,7 @@ public class Question {
     private static final String BASE_URL = "http://172.22.214.200/ctas/ajaxpro/CExam.CPractice,App_Web_tzfdzrj8.ashx";
     private static final MediaType MEDIA_TYPE_PLAIN = MediaType.get("text/plain; charset=UTF-8");
     // 填入你的sessionId
-    private static final String sessionId = "d3rkfu45bx4jnq455vkdb2ba";
+    private static final String sessionId = "rwfijv554gohxb45sapol02q";
 
     // 本次需要刷题的章节id {341, 342, 343, 344, 345, 401, 402, 403, 404, 405}
     int[] cChapterID = {341, 342, 343, 344, 345, 401, 402, 403, 404, 405};
@@ -146,7 +146,7 @@ public class Question {
                 System.out.printf("题目id：%s，答案：%s，正确！%n", questionId, questionAnswer);
                 // 回答正确后，发 写入日志请求
                 if (writeLog) {
-                    writeLog(request.newBuilder().header("X-AjaxPro-Method", "writeLog").build());
+                    writeLog(request.newBuilder().header("X-AjaxPro-Method", "WriteLog").build());
                 }
             } else {
                 System.err.printf("题目id：%s，答案：%s，错误!%n", questionId, questionAnswer);
@@ -198,7 +198,8 @@ public class Question {
                     .addHeader("Pragma", "no-cache")
                     .addHeader("Referer", "http://172.22.214.200/ctas/CPractice.aspx")
                     .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
-                    .addHeader("X-AjaxPro-Method", "GetJSONTest").build();
+                    .addHeader("X-AjaxPro-Method", "GetJSONTest")
+                    .build();
 
             try (Response response = OK_HTTP_CLIENT.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
