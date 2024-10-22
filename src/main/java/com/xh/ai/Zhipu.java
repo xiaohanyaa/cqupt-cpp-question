@@ -19,7 +19,7 @@ import static com.xh.util.Object.OK_HTTP_CLIENT;
  */
 public class Zhipu {
     private static final String API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
-    private static final String API_KEY = "ae4fca85815eb058a11e66a114d5d29c.WELoXJ7WBx5tjRGb";
+    private static final String API_KEY = "";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     public static String getAnswerByZhiPuAI(String question) {
