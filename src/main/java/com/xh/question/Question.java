@@ -20,7 +20,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static com.xh.ai.Zhipu.getAnswerByZhiPuAI;
+import static com.xh.ai.DeepSeek.getAnswerByDeepSeekAI;
 import static com.xh.util.Object.GSON;
 import static com.xh.util.Object.OK_HTTP_CLIENT;
 
@@ -53,6 +53,108 @@ public class Question {
     public ArrayList<String> CProgramIDList = new ArrayList<>();
 
     public static int correctNum = 0;
+
+    public static void main(String[] args) {
+        Question question = new Question();
+        question.countChapterQuestionNum();
+        /*question.getCProgramID();
+        question.getQuestion();*/
+    }
+
+    private void countChapterQuestionNum() {
+        Type listType = new TypeToken<List<Map<String, String>>>() {
+        }.getType();
+        int[] result = new int[10];
+        LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
+
+        for (int i = 0; i < cChapterID.length; i++) {
+            String requestBody = String.format("{\"cChapterID\":\"%d\"}", cChapterID[i]);
+            Request request = new Request.Builder()
+                    .url(BASE_URL)
+                    .post(RequestBody.create(requestBody, MEDIA_TYPE_PLAIN))
+                    .addHeader("accept", "*/*")
+                    .addHeader("accept-language", "zh-CN,zh;q=0.9")
+                    .addHeader("cache-control", "no-cache")
+                    .addHeader("content-type", "text/plain; charset=UTF-8")
+                    .addHeader("pragma", "no-cache")
+                    .addHeader("x-ajaxpro-method", "GetJSONProgramList")
+                    .addHeader("cookie", "ASP.NET_SessionId=" + sessionId)
+                    .addHeader("Referer", "http://172.22.214.200/ctas/CPractice.aspx")
+                    .addHeader("Referrer-Policy", "strict-origin-when-cross-origin")
+                    .build();
+
+            try (Response response = OK_HTTP_CLIENT.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    throw new IOException("Unexpected code " + response);
+                }
+                String responseBody = response.body().string()
+                        .replace("\\", "")
+                        .replaceFirst("\"", "")
+                        .replace("\";/*", "");
+
+                List<Map<String, String>> programList = GSON.fromJson(responseBody, listType);
+
+                // 提取 CProgramID 并放入 List 中
+                List<String> cProgramIDs = programList.stream()
+                        .map(program -> program.get("CProgramID"))
+                        .toList();
+
+                int size = cProgramIDs.size();
+                for (int k = 0; k < size; k++) {
+                    int questionIndex = 0;// 记录每个程序的题目数
+                    String programName = cProgramIDs.get(k);
+                    while (true) {
+                        String reqBody = String.format("{\"strTestParam\":\"<cTest><cProgram>%s</cProgram><cQuestionIndex>%d</cQuestionIndex></cTest>\"}", programName, questionIndex);
+                        Request req = new Request.Builder()
+                                .url(BASE_URL)
+                                .post(RequestBody.create(reqBody, MEDIA_TYPE_PLAIN))
+                                .addHeader("Accept", "*/*")
+                                .addHeader("Accept-Encoding", "gzip, deflate")
+                                .addHeader("Accept-Language", "zh-CN,zh;q=0.9")
+                                .addHeader("Cache-Control", "no-cache")
+                                .addHeader("Connection", "keep-alive")
+                                .addHeader("Content-Type", "text/plain; charset=UTF-8")
+                                .addHeader("Cookie", "ASP.NET_SessionId=" + sessionId)
+                                .addHeader("Host", "172.22.214.200")
+                                .addHeader("Origin", "http://172.22.214.200")
+                                .addHeader("Pragma", "no-cache")
+                                .addHeader("Referer", "http://172.22.214.200/ctas/CPractice.aspx")
+                                .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
+                                .addHeader("X-AjaxPro-Method", "GetJSONTest")
+                                .build();
+
+                        try (Response reso = OK_HTTP_CLIENT.newCall(req).execute()) {
+                            if (!reso.isSuccessful()) {
+                                throw new IOException("Unexpected code " + reso);
+                            }
+                            String resp = reso.body().string();
+                            checkSessionValid(resp);
+                            if (resp.contains("ArgumentOutOfRangeException")) {
+                                System.out.println("完成" + programName);
+                                Thread.sleep(5000);
+                                break;
+                            }
+                            result[i]++;
+                            map.putIfAbsent(programName, 0);
+                            map.computeIfPresent(programName, (key, val) -> val + 1);
+                            questionIndex++;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        for (int i = 0; i < result.length; i++) {
+            System.out.printf("第 %d 章共有 %d 道题目\n", i + 1, result[i]);
+        }
+
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            System.out.println(entry.getKey() + " -- " + entry.getValue());
+        }
+    }
 
     public void getCProgramID() {
         Type listType = new TypeToken<List<Map<String, String>>>() {
@@ -98,7 +200,7 @@ public class Question {
     public void getQuestion() {
         // 参数有待调整
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                5, 10, 5000,
+                6, 12, 5000,
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>()
         );
@@ -140,7 +242,7 @@ public class Question {
                 throw new IOException("Unexpected code " + response);
             }
             String resp = response.body().string();
-            chcekSessionVaild(resp);
+            checkSessionValid(resp);
             if (resp.contains("1")) {
                 correctNum++;
                 System.out.printf("题目id：%s，答案：%s，正确！%n", questionId, questionAnswer);
@@ -150,7 +252,19 @@ public class Question {
                 }
             } else {
                 System.err.printf("题目id：%s，答案：%s，错误!%n", questionId, questionAnswer);
+                getJSONSummary(request.newBuilder().header("X-AjaxPro-Method", "GetJSONSummary").build());
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void getJSONSummary(Request summary) {
+        try (Response response = OK_HTTP_CLIENT.newCall(summary).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Unexpected code " + response);
+            }
+            System.out.println("summary 响应：" + response.body().string());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -173,9 +287,12 @@ public class Question {
         // 这个程序下所有问题对话的列表
         JsonObject content = new JsonObject();
         // 初始化
-        content.addProperty("model", "glm-4-plus");
+        content.addProperty("model", "deepseek-coder");
+        content.addProperty("temperature", 0);// 代码生成/数学解题
+
         JsonArray messagesArray = new JsonArray();
-        JsonObject[] dialogueObj = dialogueObj("我会给你一个程序代码，连续问你几个问题，问题与上一个问题没有关联，尽可能尝试运行代码，根据运行结果回答，回答问题要干净利落且准确,并把正确答案放在最后。比如，我给你的信息： '题目id:22690,问题:1+1=, A:1,B:2,C:3,D:4',你的回复：'解析，换行{'22690':'B'}',22690是题目id}",
+        JsonObject[] dialogueObj = dialogueObj("我会给你一个程序代码，连续问你几个问题，如果代码中有行号，以该行号为准。尽可能尝试运行代码，根据运行结果回答，回答问题要抓住题目考点，干净利落且准确,并把正确答案放在最后。你做好后，请你自己问问自己做正确了没有，思考再三后再返回" +
+                        "比如，我给你的信息： '题目id:22690,问题:1+1=, A:1,B:2,C:3,D:4',你的回复：'解析，换行{'22690':'B'}',22690是题目id}",
                 "好的，我会把代码运行，通过结果和题目一起分析得出正确答案,并把正确答案以你提供的格式放在最后");
         messagesArray.add(dialogueObj[0]);
         messagesArray.add(dialogueObj[1]);
@@ -207,7 +324,7 @@ public class Question {
                 }
 
                 String resp = response.body().string();
-                chcekSessionVaild(resp);
+                checkSessionValid(resp);
                 if (resp.contains("ArgumentOutOfRangeException")) {
                     System.out.println(programId + "的相关题目已完成！\n");
                     System.out.println("题目 cProgramId = " + programId + ", cQuestionIndex = " + questionIndex + " 不存在");
@@ -230,14 +347,15 @@ public class Question {
                 String cQuestionID = cQuestion.get("CQuestionID").getAsString();
                 String cQuestionContent = unescapeHtml(cQuestion.get("CQuestionContent").getAsString());
                 String cProgramCode = unescapeHtml(cQuestion.get("CProgramCode").getAsString()).replaceAll("\\\\n", "\\n");
-                String question = String.format("题目id:%s,问题：%s", cQuestionID, cQuestionContent);
+                String question = String.format("题目id:%s,问题：%s. \n你的回复格式：'解析，换行{'xxx':'B'}',xxx是题目id。" +
+                        "还有，你做好后，请你自己问问自己做正确了没有，思考再三后再返回", cQuestionID, cQuestionContent);
                 System.out.println("184行输出：" + question);
                 String s = addCode ? String.format("程序代码：%s,  %s", cProgramCode, question) : question;
-                // 调用智普AI进行问题解析
+                // 调用AI进行问题解析
                 JsonObject[] currDialogueObj = dialogueObj(s, "");
                 messagesArray.add(currDialogueObj[0]);
                 content.add("messages", messagesArray);
-                String answer = Objects.requireNonNull(getAnswerByZhiPuAI(GSON.toJson(content))).replaceAll("#+ ", "");
+                String answer = Objects.requireNonNull(getAnswerByDeepSeekAI(GSON.toJson(content))).replaceAll("#+ ", "");
                 System.out.println("通过AI获取解析成功");
                 // 拼接问题和解析
                 String result = "";
@@ -261,7 +379,7 @@ public class Question {
         }
     }
 
-    private static void chcekSessionVaild(String resp) {
+    private static void checkSessionValid(String resp) {
         if (resp.contains("正在中止线程")) {
             throw new RuntimeException("请重新在浏览器登录后再执行并检查cookie是否已过期");
         }

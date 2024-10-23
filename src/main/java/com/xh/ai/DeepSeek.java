@@ -17,13 +17,13 @@ import static com.xh.util.Object.OK_HTTP_CLIENT;
  * @Author: 小汉同学
  * @Description:
  */
-public class Zhipu {
-    private static final String API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
-    private static final String API_KEY = "ae4fca85815eas8a11e66a114d5d29c.WELoXJ7WBx5tjRGb";
+public class DeepSeek {
+    private static final String API_URL = "https://api.deepseek.com/chat/completions";
+    private static final String API_KEY = "sk-1d00b8e0aeasd896a6b0bbcee716d";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
-    public static String getAnswerByZhiPuAI(String question) {
-        System.out.println("正在调用智普AI：\n" + question);
+    public static String getAnswerByDeepSeekAI(String question) {
+        System.out.println("正在调用DeepSeekAI：\n" + question);
         RequestBody body = RequestBody.create(question, JSON);
         Request request = new Request.Builder()
                 .url(API_URL)
