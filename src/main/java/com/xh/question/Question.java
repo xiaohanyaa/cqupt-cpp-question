@@ -45,7 +45,7 @@ public class Question {
     private static final String BASE_URL = "http://172.22.214.200/ctas/ajaxpro/CExam.CPractice,App_Web_tzfdzrj8.ashx";
     private static final MediaType MEDIA_TYPE_PLAIN = MediaType.get("text/plain; charset=UTF-8");
     // 填入你的sessionId
-    private static final String sessionId = "rwfijv554gohxb45sapol02q";
+    private static final String sessionId = "hello world";
 
     // 本次需要刷题的章节id {341, 342, 343, 344, 345, 401, 402, 403, 404, 405}
     int[] cChapterID = {341, 342, 343, 344, 345, 401, 402, 403, 404, 405};
