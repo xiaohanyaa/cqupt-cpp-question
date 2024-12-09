@@ -23,11 +23,11 @@ public class Answer {
 
     static final Pattern pattern = Pattern.compile("\\{'(\\d+)':'([A-D])'\\}");
 
-    public static final String fileName = "httpOk/questions/c++题库--答案汇总byDeepSeek.txt";
+    public static final String fileName = "answer/c++题库--答案汇总系统版.txt";
 
     public static void main(String[] args) throws Exception {
-        Answer answer = new Answer();
-        answer.collectAnswer();
+        //Answer answer = new Answer();
+        //answer.collectAnswer();
         //answer.countChapterNumber();
         // answer.checkAnswer(answer, new Question());
     }
